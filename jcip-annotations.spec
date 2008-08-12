@@ -77,7 +77,7 @@ Java Concurrency in Practice
 
 %package javadoc
 Summary:        Javadoc for %{name}
-Group:          Development/Documentation
+Group:          Development/Java
 
 %description javadoc
 Javadoc for %{name}.
