@@ -55,7 +55,8 @@ BuildArch:      noarch
 %endif
 
 BuildRequires:  jpackage-utils >= 0:1.7.5
-BuildRequires:  java-devel = 0:1.5.0
+BuildRequires:  java-rpmbuild
+
 #BuildRequires:  ant >= 0:1.6.5
 #BuildRequires:  ecj
 #BuildRequires:  eclipse-ecj
