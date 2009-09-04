@@ -34,7 +34,7 @@
 
 Name:           jcip-annotations
 Version:        1.0
-Release:        %mkrel 1.0.1
+Release:        %mkrel 1.0.2
 Epoch:          0
 Summary:        Java Concurrency in Practice
 License:        Creative Commons Attribution License
