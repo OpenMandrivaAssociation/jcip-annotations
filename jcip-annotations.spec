@@ -147,3 +147,21 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc %{_javadocdir}/%{name}-%{version}
 %doc %{_javadocdir}/%{name}
+
+
+%changelog
+* Fri Dec 10 2010 Oden Eriksson <oeriksson@mandriva.com> 0:1.0-1.0.3mdv2011.0
++ Revision: 619785
+- the mass rebuild of 2010.0 packages
+
+* Fri Sep 04 2009 Thierry Vignaud <tv@mandriva.org> 0:1.0-1.0.2mdv2010.0
++ Revision: 429597
+- rebuild
+
+* Tue Aug 12 2008 Alexander Kurtakov <akurtakov@mandriva.org> 0:1.0-1.0.1mdv2009.0
++ Revision: 271258
+- fix group
+- BR java-rpmbuild
+- import jcip-annotations
+
+
