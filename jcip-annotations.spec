@@ -1,167 +1,126 @@
-# Copyright (c) 2000-2008, JPackage Project
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the
-#    distribution.
-# 3. Neither the name of the JPackage Project nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-
-%define gcj_support 0
-
-%define section   free
-
+%{?_javapackages_macros:%_javapackages_macros}
 Name:           jcip-annotations
-Version:        1.0
-Release:        %mkrel 1.0.3
-Epoch:          0
-Summary:        Java Concurrency in Practice
-License:        Creative Commons Attribution License
-Group:          Development/Java
+Version:        1
+Release:        8.20060626.0%{?dist}
+Summary:        Java annotations for multithreaded software
+
+
+License:        CC-BY
 URL:            http://www.jcip.net/
-Source0:        http://www.jcip.net/jcip-annotations-src.jar
-Source1:        http://repo1.maven.org/maven/livetribe/maven/m2/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.pom
-#Patch0:         aQute-bndlib-Filter.patch
+Source0:        http://www.jcip.net/%{name}-src.jar
+Source1:        http://mirrors.ibiblio.org/pub/mirrors/maven2/net/jcip/%{name}/1.0/%{name}-1.0.pom
 
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-%if %{gcj_support}
-BuildRequires:    java-gcj-compat-devel
-%endif
-
-
-%if ! %{gcj_support}
+# There is no point in building native libraries, as the sources contain only
+# annotation definitions, so no code would be generated.
 BuildArch:      noarch
-%endif
+BuildRequires:  java-devel >= 1.5.0, jpackage-utils
 
-BuildRequires:  jpackage-utils >= 0:1.7.5
-BuildRequires:  java-rpmbuild
+Requires:       java >= 1.5.0, jpackage-utils
 
-#BuildRequires:  ant >= 0:1.6.5
-#BuildRequires:  ecj
-#BuildRequires:  eclipse-ecj
-#BuildRequires:  eclipse-platform
-#BuildRequires:  eclipse-rcp
-
-Requires:  java >= 0:1.5.0
-#Requires:  ant >= 0:1.6.5
-#Requires:  ecj
-#Requires:  eclipse-ecj
-#Requires:  eclipse-platform
-#Requires:  eclipse-rcp
-Requires(post):    jpackage-utils >= 0:1.7.4
-Requires(postun):  jpackage-utils >= 0:1.7.4
 
 %description
-Java Concurrency in Practice
+This package provides class, field, and method level annotations for
+describing thread-safety policies.  These annotations are relatively
+unintrusive and are beneficial to both users and maintainers.  Users can see
+immediately whether a class is thread-safe, and maintainers can see
+immediately whether thread-safety guarantees must be preserved.  Annotations
+are also useful to a third constituency: tools.  Static code-analysis tools
+may be able to verify that the code complies with the contract indicated by
+the annotation, such as verifying that a class annotated with @Immutable
+actually is immutable.
 
 %package javadoc
-Summary:        Javadoc for %{name}
-Group:          Development/Java
+
+Summary:        Javadoc for jcip-annotations
+Requires:       %{name} = %{version}-%{release}, jpackage-utils
 
 %description javadoc
-Javadoc for %{name}.
-
+Javadoc documentation for the jcip-annotations package.
+On systems where javadoc is sinjdoc, this package contains nothing useful
+since sinjdoc does not understand annotations.
 
 %prep
 %setup -q -c
-mkdir -p target/site/apidocs/
-mkdir -p target/classes/
-mkdir -p src/main/java/
-mv net src/main/java
-#%patch0 -b .sav0
+
+# Get rid of the manifest created upstream with ant
+rm -fr META-INF
+
+# Fix DOS line endings
+sed -i 's/\r//' net/jcip/annotations/package.html
 
 %build
-%javac -d target/classes $(find src/main/java -name "*.java")
-%javadoc -d target/site/apidocs -sourcepath src/main/java net.jcip.annotations
-for f in $(find aQute/ -type f -not -name "*.class"); do
-    cp $f target/classes/$f
-done
-pushd target/classes
-%jar cmf ../../META-INF/MANIFEST.MF ../%{name}-%{version}.jar *
-popd
+mkdir classes
+find . -name '*.java' | xargs %javac -g -source 1.5 -target 1.5 -d classes
+cd classes
+%jar cf ../%{name}.jar net
+cd ..
+%javadoc -d docs -source 1.5 net.jcip.annotations
 
 %install
-rm -rf $RPM_BUILD_ROOT
-# jars
-install -d -m 755 $RPM_BUILD_ROOT%{_javadir}
-install -m 644 target/%{name}-%{version}.jar \
-  $RPM_BUILD_ROOT%{_javadir}/%{name}-%{version}.jar
-%add_to_maven_depmap net.jcip jcip-annotations %{version} JPP %{name}
-(cd $RPM_BUILD_ROOT%{_javadir} && for jar in *-%{version}*; do ln -sf ${jar} `echo $jar| sed  "s|-%{version}||g"`; done)
+mkdir -p %{buildroot}%{_javadir}
+mv %{name}.jar %{buildroot}%{_javadir}/%{name}.jar
 
-# pom
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/maven2/poms
-install -m 644 %{SOURCE1} $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP-%{name}.pom
+# install maven metadata
+mkdir -p %{buildroot}/%{_mavenpomdir}
+cp %{SOURCE1} %{buildroot}%{_mavenpomdir}/JPP-%{name}.pom
+%add_maven_depmap
 
-# javadoc
-install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-cp -pr target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name} 
-
-%{gcj_compile}
-
-%clean
-rm -rf $RPM_BUILD_ROOT
-
-%post
-%update_maven_depmap
-%if %{gcj_support}
-%{update_gcjdb}
-%endif
-
-%postun
-%update_maven_depmap
-%if %{gcj_support}
-%{clean_gcjdb}
-%endif
+# install javadoc
+mkdir -p %{buildroot}%{_javadocdir}/%{name}
+cp -pr docs/* %{buildroot}%{_javadocdir}/%{name}
 
 %files
-%defattr(-,root,root,-)
-%{_javadir}/*
-%{_datadir}/maven2
-%{_mavendepmapfragdir}
-%{gcj_files}
+%{_javadir}/%{name}.jar
+%{_mavendepmapfragdir}/%{name}
+%{_mavenpomdir}/JPP-%{name}.pom
 
 %files javadoc
-%defattr(-,root,root,-)
-%doc %{_javadocdir}/%{name}-%{version}
-%doc %{_javadocdir}/%{name}
-
+%{_javadocdir}/%{name}
 
 %changelog
-* Fri Dec 10 2010 Oden Eriksson <oeriksson@mandriva.com> 0:1.0-1.0.3mdv2011.0
-+ Revision: 619785
-- the mass rebuild of 2010.0 packages
+* Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1-8.20060626
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
-* Fri Sep 04 2009 Thierry Vignaud <tv@mandriva.org> 0:1.0-1.0.2mdv2010.0
-+ Revision: 429597
-- rebuild
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1-7.20060626
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
-* Tue Aug 12 2008 Alexander Kurtakov <akurtakov@mandriva.org> 0:1.0-1.0.1mdv2009.0
-+ Revision: 271258
-- fix group
-- BR java-rpmbuild
-- import jcip-annotations
+* Mon Nov 26 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 1-6.20060626
+- Update to current packaging guidelines
+- Resolves: rhbz#880283
 
+* Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1-5.20060626
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
+* Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1-4.20060626
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1-3.20060626
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Fri Dec  3 2010 Stanislav Ochotnicky <sochotnicky@redhat.com> - 1-2.20060626
+- Fix maven metadata and pom filename (Resolves rhbz#655807)
+- Use versionless jars and javadoc
+- Few other packaging fixes
+
+* Wed Jan  6 2010 Jerry James <loganjerry@gmail.com> - 1-1.20060626
+- Add maven depmap
+- Upstream uploaded a new source jar with a trivial difference
+- Fix the version-release number
+
+* Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0-20060628.4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
+* Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0-20060627.4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
+
+* Mon May  5 2008 Jerry James <loganjerry@gmail.com> - 0-20060626.4
+- Don't package source or HTML files in the jar
+
+* Fri Apr 18 2008 Jerry James <loganjerry@gmail.com> - 0-20060626.3
+- Changes required by new Java packaging guidelines
+
+* Wed Nov 14 2007 Jerry James <loganjerry@gmail.com> - 0-20060626.2
+- Don't make the javadocs appear in a docs subdirectory
+
+* Tue Sep 18 2007 Jerry James <loganjerry@gmail.com> - 0-20060626.1
+- Initial RPM
