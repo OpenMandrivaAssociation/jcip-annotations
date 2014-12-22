@@ -1,9 +1,9 @@
 %{?_javapackages_macros:%_javapackages_macros}
 Name:           jcip-annotations
 Version:        1
-Release:        8.20060626.0%{?dist}
+Release:        14.20060626.0
 Summary:        Java annotations for multithreaded software
-
+Group:		Development/Java
 
 License:        CC-BY
 URL:            http://www.jcip.net/
@@ -15,7 +15,7 @@ Source1:        http://mirrors.ibiblio.org/pub/mirrors/maven2/net/jcip/%{name}/1
 BuildArch:      noarch
 BuildRequires:  java-devel >= 1.5.0, jpackage-utils
 
-Requires:       java >= 1.5.0, jpackage-utils
+Requires:       java-headless >= 1.5.0, jpackage-utils
 
 
 %description
@@ -32,7 +32,7 @@ actually is immutable.
 %package javadoc
 
 Summary:        Javadoc for jcip-annotations
-Requires:       %{name} = %{version}-%{release}, jpackage-utils
+Requires:       %{name} = %{version}-%{release}
 
 %description javadoc
 Javadoc documentation for the jcip-annotations package.
@@ -63,21 +63,36 @@ mv %{name}.jar %{buildroot}%{_javadir}/%{name}.jar
 # install maven metadata
 mkdir -p %{buildroot}/%{_mavenpomdir}
 cp %{SOURCE1} %{buildroot}%{_mavenpomdir}/JPP-%{name}.pom
-%add_maven_depmap
+%add_maven_depmap -a com.github.stephenc.jcip:jcip-annotations
 
 # install javadoc
 mkdir -p %{buildroot}%{_javadocdir}/%{name}
 cp -pr docs/* %{buildroot}%{_javadocdir}/%{name}
 
-%files
-%{_javadir}/%{name}.jar
-%{_mavendepmapfragdir}/%{name}
-%{_mavenpomdir}/JPP-%{name}.pom
+%files -f .mfiles
 
 %files javadoc
 %{_javadocdir}/%{name}
 
 %changelog
+* Mon Nov 10 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 1-14.20060626
+- Add alias for com.github.stephenc.jcip:jcip-annotations
+
+* Tue Jun 10 2014 Richard Fearn <richardfearn@gmail.com> - 1-13.20060626
+- Switch to .mfiles
+
+* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1-12.20060626
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Sun Mar 16 2014 Richard Fearn <richardfearn@gmail.com> - 1-11.20060626
+- Change java dependency to java-headless (bug #1068255)
+
+* Sun Feb 23 2014 Richard Fearn <richardfearn@gmail.com> - 1-10.20060626
+- Remove jpackage-utils dependency from jcip-annotations-javadoc
+
+* Sun Feb 23 2014 Richard Fearn <richardfearn@gmail.com> - 1-9.20060626
+- Update source URL
+
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1-8.20060626
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
