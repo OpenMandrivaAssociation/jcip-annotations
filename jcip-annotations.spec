@@ -1,7 +1,7 @@
 %{?_javapackages_macros:%_javapackages_macros}
 Name:           jcip-annotations
 Version:        1
-Release:        14.20060626.1
+Release:        14.20060626.2
 Summary:        Java annotations for multithreaded software
 Group:		Development/Java
 
