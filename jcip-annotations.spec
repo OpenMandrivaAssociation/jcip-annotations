@@ -6,7 +6,7 @@ Summary:        Java annotations for multithreaded software
 Group:		Development/Java
 
 License:        CC-BY
-URL:            http://www.jcip.net/
+URL:            https://www.jcip.net/
 Source0:        http://www.jcip.net/%{name}-src.jar
 Source1:        http://mirrors.ibiblio.org/pub/mirrors/maven2/net/jcip/%{name}/1.0/%{name}-1.0.pom
 
